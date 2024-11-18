@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: card-process
+datasource:
+  driverClassName: org.postgresql.Driver
+  password: 0095
+  url: jdbc:postgresql://localhost:5432/postgres
+  username: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        types:
+          print:
+            warn :false
+    show-sql: true
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    enabled: true
+  main:
+    allow-bean-definition-overriding: true
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+    groups-order: asc
+    operations-sorter: alpha
+    try-it-out-enabled: true
+    tags-sorter: alpha
+    display-request-duration: true
+    doc-expansion: "none"
+  api-docs:
+    path: /api/docs
+server:
+  port: 8081
