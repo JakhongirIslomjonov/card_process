@@ -1,14 +1,14 @@
 spring:
   application:
-    name: card-process
-datasource:
-  driverClassName: org.postgresql.Driver
-  password: 0095
-  url: jdbc:postgresql://localhost:5432/postgres
-  username: postgres
+    name: card_delivery
+  datasource:
+    driverClassName: org.postgresql.Driver
+    password: 0095
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true

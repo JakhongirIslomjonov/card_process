@@ -14,9 +14,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import uz.anas.card.exceptions.BadRequestException;
-import uz.anas.card.exceptions.ExceptionResponse;
-import uz.anas.card.exceptions.NotFoundException;
+import uz.dev.cardprocess.exceptions.BadRequestException;
+import uz.dev.cardprocess.exceptions.ExceptionResponse;
+import uz.dev.cardprocess.exceptions.NotFoundException;
+
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;

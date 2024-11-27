@@ -16,7 +16,6 @@ public class CardProcessApplication {
         SpringApplication.run(CardProcessApplication.class, args);
     }
 
-
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();

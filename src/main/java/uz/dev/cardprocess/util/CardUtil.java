@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
 import uz.dev.cardprocess.dto.CurrencyRateDTO;
 import uz.dev.cardprocess.dto.DebitRequestDTO;
 import uz.dev.cardprocess.entity.Card;
@@ -40,7 +41,7 @@ public class CardUtil {
                 if (rates.isEmpty()) {
                     throw new BadRequestException("The currency could not be loaded.");
                 }
-                return Math.round(rates.get(0).rate());
+                return Math.round(rates.get(0).getRate());
             }
             throw new BadRequestException("The currency could not be loaded.");
         } catch (JsonProcessingException e) {

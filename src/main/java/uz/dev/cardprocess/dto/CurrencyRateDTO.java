@@ -14,4 +14,6 @@ public class CurrencyRateDTO {
 
     @JsonProperty("Rate")
     private double rate;
+
+
 }
