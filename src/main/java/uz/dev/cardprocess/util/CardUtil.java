@@ -10,10 +10,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import uz.dev.cardprocess.dto.CurrencyRateDTO;
+import uz.dev.cardprocess.dto.DebitRequestDTO;
 import uz.dev.cardprocess.entity.Card;
+import uz.dev.cardprocess.entity.enums.Currency;
 import uz.dev.cardprocess.exceptions.BadRequestException;
-import uz.dev.cardprocess.exceptions.InternalServerException;
-import uz.dev.cardprocess.exceptions.NotFoundException;
 import uz.dev.cardprocess.repository.CardRepository;
 
 import java.util.List;
@@ -37,13 +38,13 @@ public class CardUtil {
                 List<CurrencyRateDTO> rates = objectMapper.readValue(jsonResponse, new TypeReference<>() {
                 });
                 if (rates.isEmpty()) {
-                    throw new InternalServerException("The currency could not be loaded.");
+                    throw new BadRequestException("The currency could not be loaded.");
                 }
                 return Math.round(rates.get(0).rate());
             }
-            throw new InternalServerException("The currency could not be loaded.");
+            throw new BadRequestException("The currency could not be loaded.");
         } catch (JsonProcessingException e) {
-            throw new InternalServerException("The currency could not be parsed.");
+            throw new BadRequestException("The currency could not be parsed.");
         }
 
     }
@@ -55,14 +56,14 @@ public class CardUtil {
 
     public long sumWithCurrencyRate(Card card, DebitRequestDTO transactionDto, long currencyRate) {
         long sum;
-        if (transactionDto.currency().equals(Currency.USD)) {
-            sum = transactionDto.amount() * currencyRate;
+        if (transactionDto.getCurrency().equals(Currency.USD)) {
+            sum = transactionDto.getAmount() * currencyRate;
             if (sum > card.getBalance()) {
                 throw new BadRequestException("Insufficient funds.");
             }
             return sum;
         } else {
-            sum = transactionDto.amount() / currencyRate;
+            sum = transactionDto.getAmount() / currencyRate;
             if (sum > card.getBalance()) {
                 throw new BadRequestException("Insufficient funds.");
             }
@@ -73,7 +74,7 @@ public class CardUtil {
     public Card checkCardExistence(UUID cardId) {
         var cardOptional = cardRepository.findById(cardId);
         if (cardOptional.isEmpty()) {
-            throw new NotFoundException("Card with such id not exists in processing.");
+            throw new BadRequestException("Card with such id not exists in processing.");
         }
         return cardOptional.get();
     }
