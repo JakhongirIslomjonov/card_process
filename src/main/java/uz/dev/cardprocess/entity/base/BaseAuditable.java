@@ -21,6 +21,6 @@ import java.util.UUID;
 @NoArgsConstructor
 public class BaseAuditable implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private UUID id;
 }
