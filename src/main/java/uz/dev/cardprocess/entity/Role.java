@@ -1,5 +1,6 @@
 package uz.dev.cardprocess.entity;
 
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -8,6 +9,8 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import uz.dev.cardprocess.entity.base.Auditable;
 import uz.dev.cardprocess.entity.enums.RoleName;
+
+
 
 @Getter
 @Setter

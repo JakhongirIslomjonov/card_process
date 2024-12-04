@@ -4,24 +4,59 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import uz.dev.cardprocess.dto.DataDTO;
 import uz.dev.cardprocess.dto.LoginDTO;
+import uz.dev.cardprocess.dto.SignUp;
 import uz.dev.cardprocess.dto.TokenDTO;
+import uz.dev.cardprocess.entity.User;
+import uz.dev.cardprocess.entity.enums.RoleName;
+import uz.dev.cardprocess.exceptions.BadRequestException;
+import uz.dev.cardprocess.repository.RoleRepository;
+import uz.dev.cardprocess.repository.UserRepository;
 import uz.dev.cardprocess.service.JwtService;
 import uz.dev.cardprocess.service.UserService;
+
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
 
     @Override
-    public DataDTO<TokenDTO>    checkLoginDetails(LoginDTO loginDTO) {
-        Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword()));
-        String token = jwtService.genToken((UserDetails) auth.getPrincipal());
+    public DataDTO<TokenDTO> checkLoginDetails(LoginDTO loginDTO) {
+        String token;
+        try {
+            Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword()));
+            token = jwtService.genToken((UserDetails) auth.getPrincipal());
+        } catch (AuthenticationException e) {
+            throw new BadRequestException(e.getMessage());
+        }
         return new DataDTO<>(new TokenDTO(token));
+    }
+
+    @Override
+    public DataDTO<String> signUp(SignUp signUp) {
+        User userSign = userRepository.findByEmail(signUp.getEmail()).orElseThrow(() -> new BadRequestException("this email already sign up "));
+        if (Objects.nonNull(userSign)) {
+            userRepository.save(
+                    User.builder()
+                            .email(signUp.getEmail())
+                            .fullName(signUp.getFullName())
+                            .password(passwordEncoder.encode(signUp.getPassword()))
+                            .roles(List.of(roleRepository.findByRoleName(RoleName.ROLE_CLIENT)))
+                            .build());
+            return new DataDTO<>("success sign up");
+        }
+        return new DataDTO<>("error sign up process");
     }
 }

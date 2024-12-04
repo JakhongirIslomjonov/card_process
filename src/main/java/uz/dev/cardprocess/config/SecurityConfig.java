@@ -26,14 +26,14 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
         http.sessionManagement(m -> m.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.exceptionHandling(m -> m.authenticationEntryPoint(customAuthenticationEntryPoint));
         http.csrf(AbstractHttpConfigurer::disable);
         http.authorizeHttpRequests(m -> m
-                .requestMatchers("/**").permitAll()
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                 .anyRequest().authenticated());
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
