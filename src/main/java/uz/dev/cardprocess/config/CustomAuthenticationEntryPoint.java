@@ -1,6 +1,7 @@
 package uz.dev.cardprocess.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.sentry.Sentry;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,6 +14,7 @@ import uz.dev.cardprocess.exceptions.ExceptionResponse;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+
 @Component
 @RequiredArgsConstructor
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
@@ -22,15 +24,21 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
+        // Set response status and content type
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
 
+        // Create an exception response
         ExceptionResponse exceptionResponse = new ExceptionResponse(
                 HttpStatus.UNAUTHORIZED,
                 "Authentication token is missing or invalid.",
                 LocalDateTime.now()
         );
 
+        // Log the original exception to Sentry
+        Sentry.captureException(authException);
+
+        // Write the response as JSON
         response.getWriter().write(objectMapper.writeValueAsString(exceptionResponse));
     }
 }

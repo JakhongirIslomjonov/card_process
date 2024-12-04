@@ -6,6 +6,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.web.client.RestTemplate;
+import uz.dev.cardprocess.exceptions.BadRequestException;
 
 @EnableCaching
 @EnableJpaAuditing
@@ -20,5 +21,7 @@ public class CardProcessApplication {
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
+
+
 
 }

@@ -1,8 +1,8 @@
 package uz.dev.cardprocess.exceptions.handler;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.sentry.Sentry;
 import jakarta.validation.ConstraintViolationException;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,17 +18,15 @@ import uz.dev.cardprocess.exceptions.BadRequestException;
 import uz.dev.cardprocess.exceptions.ExceptionResponse;
 import uz.dev.cardprocess.exceptions.NotFoundException;
 
-
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
-@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UsernameNotFoundException.class)
-
     public HttpEntity<?> handleAccessDeniedException(UsernameNotFoundException e) {
+        Sentry.captureException(e); // Sentryga yuborish
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(new ExceptionResponse(
@@ -40,6 +38,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ExpiredJwtException.class)
     public HttpEntity<?> handleAccessDeniedException(ExpiredJwtException e) {
+        Sentry.captureException(e); // Sentryga yuborish
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(new ExceptionResponse(
@@ -51,6 +50,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ExceptionResponse> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException e) {
+        Sentry.captureException(e); // Sentryga yuborish
         String errorMessage = String.format("Validation failed: '%s' for parameter '%s'", e.getValue(), e.getName());
         ExceptionResponse response = new ExceptionResponse(
                 HttpStatus.BAD_REQUEST,
@@ -62,6 +62,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ExceptionResponse> handleConstraintViolation(ConstraintViolationException e) {
+        Sentry.captureException(e); // Sentryga yuborish
         String errorMessage = e.getConstraintViolations().stream()
                 .map(violation -> String.format("'%s' : %s", violation.getPropertyPath(), violation.getMessage()))
                 .collect(Collectors.joining(", "));
@@ -71,13 +72,12 @@ public class GlobalExceptionHandler {
                 "Validation failed: " + errorMessage,
                 LocalDateTime.now()
         );
-
-        // Return the response entity
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ExceptionResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException e) {
+        Sentry.captureException(e); // Sentryga yuborish
         String errorMessage = "Malformed JSON request or invalid data format";
         ExceptionResponse response = new ExceptionResponse(
                 HttpStatus.BAD_REQUEST,
@@ -89,6 +89,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ExceptionResponse> handleMethodArgumentTypeMismatch(BadRequestException e) {
+        Sentry.captureException(e); // Sentryga yuborish
+        ExceptionResponse response = new ExceptionResponse(
+                HttpStatus.BAD_REQUEST,
+                e.getMessage(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ExceptionResponse> handleMethodArgumentTypeMismatchRuntime(RuntimeException e) {
+        Sentry.captureException(e); // Sentryga yuborish
         ExceptionResponse response = new ExceptionResponse(
                 HttpStatus.BAD_REQUEST,
                 e.getMessage(),
@@ -99,6 +111,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
     public ResponseEntity<ExceptionResponse> handleAuthenticationCredentialsNotFound(AuthenticationCredentialsNotFoundException e) {
+        Sentry.captureException(e); // Sentryga yuborish
         ExceptionResponse response = new ExceptionResponse(
                 HttpStatus.UNAUTHORIZED,
                 "Authentication credentials are missing or invalid",
@@ -109,6 +122,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ExceptionResponse> handleNotFound(NotFoundException e) {
+        Sentry.captureException(e); // Sentryga yuborish
         ExceptionResponse response = new ExceptionResponse(
                 HttpStatus.NOT_FOUND,
                 e.getMessage(),
@@ -119,6 +133,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        Sentry.captureException(e); // Sentryga yuborish
         StringBuilder msg = new StringBuilder("Check field(s) format: ");
         e.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
@@ -133,5 +148,4 @@ public class GlobalExceptionHandler {
                         msg.toString(),
                         LocalDateTime.now()));
     }
-
 }

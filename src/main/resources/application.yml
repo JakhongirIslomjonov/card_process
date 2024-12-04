@@ -16,6 +16,11 @@ spring:
           print:
             warn :false
     show-sql: true
-
+sentry:
+  dsn:
+  environment: "development"
+  traces-sample-rate: 1.0    # 1.0 - barcha requestlarni kuzatadi
+  debug: true                # Debug rejimini yoqing (faqat test uchun)'
+  in-app-includes: uz.dev.cardprocess
 server:
   port: 8081
