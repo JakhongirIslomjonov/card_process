@@ -15,7 +15,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Setter
 @Getter
-public class SignUp implements Serializable {
+public class SignUpDTO implements Serializable {
 
     @Email
     @NotBlank

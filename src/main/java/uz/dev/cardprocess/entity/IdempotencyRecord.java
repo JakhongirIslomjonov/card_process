@@ -20,5 +20,8 @@ public class IdempotencyRecord {
     private UUID cardId;
     private UUID transactionId;
 
-
+    public IdempotencyRecord(UUID idempotencyKey, UUID cardId) {
+        this.idempotencyKey = idempotencyKey;
+        this.cardId = cardId;
+    }
 }

@@ -18,7 +18,7 @@ public class Card extends Auditable {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User userId;
+    private User user;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

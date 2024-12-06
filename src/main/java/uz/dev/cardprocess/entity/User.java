@@ -1,9 +1,6 @@
 package uz.dev.cardprocess.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 
 import lombok.*;
@@ -21,8 +18,11 @@ import java.util.List;
 @Builder
 @Table(name = "users")
 @Entity
-public class User extends Auditable implements UserDetails {
-
+public class User  implements UserDetails {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
     private String fullName;
 
     @ManyToMany

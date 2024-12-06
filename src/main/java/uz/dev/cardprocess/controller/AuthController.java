@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uz.dev.cardprocess.dto.DataDTO;
 import uz.dev.cardprocess.dto.LoginDTO;
-import uz.dev.cardprocess.dto.SignUp;
+
+import uz.dev.cardprocess.dto.SignUpDTO;
 import uz.dev.cardprocess.dto.TokenDTO;
 import uz.dev.cardprocess.service.UserService;
 
@@ -24,7 +25,7 @@ public class AuthController {
     }
 
     @PostMapping("/sign-up")
-    public DataDTO<String> signUp(@RequestBody SignUp signUp) {
+    public DataDTO<String> signUp(@RequestBody SignUpDTO signUp) {
         return userService.signUp(signUp);
     }
 
