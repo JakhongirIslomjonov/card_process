@@ -1,5 +1,6 @@
 package uz.dev.cardprocess.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,13 +20,13 @@ public class AuthController {
 
     private final UserService userService;
 
-    @PostMapping("/login")
-    public DataDTO<TokenDTO> checkout(@RequestBody LoginDTO loginDTO) {
+   /* @PostMapping("/login")
+    public DataDTO<TokenDTO> checkout(@RequestBody @Valid LoginDTO loginDTO) {
         return userService.checkLoginDetails(loginDTO);
-    }
+    }*/
 
     @PostMapping("/sign-up")
-    public DataDTO<String> signUp(@RequestBody SignUpDTO signUp) {
+    public DataDTO<String> signUp(@RequestBody  @Valid SignUpDTO signUp) {
         return userService.signUp(signUp);
     }
 

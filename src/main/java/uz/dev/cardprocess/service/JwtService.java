@@ -20,11 +20,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JwtService {
 
-    private String secretKey = "bu top key ";
+    private final String secretKey = "bu top asfdasdfasdfasdfasdfsadfsdfasdfa123###key";
 
     public String genToken(UserDetails userDetails) {
         String roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
-        return "Bearer" + Jwts.builder()
+        return "Bearer " + Jwts.builder()
                 .setSubject(userDetails.getUsername())
                 .claim("authorities", roles)
                 .setIssuedAt(new Date())
@@ -35,7 +35,7 @@ public class JwtService {
     }
 
     private Key genKey() {
-        byte[] key = Decoders.BASE64.decode(secretKey);
+        byte[] key = secretKey.getBytes();
         return Keys.hmacShaKeyFor(key);
     }
 

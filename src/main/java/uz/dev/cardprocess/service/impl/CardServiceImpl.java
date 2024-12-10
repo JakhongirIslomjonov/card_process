@@ -38,7 +38,7 @@ public class CardServiceImpl implements CardService {
         if (cardRepository.findActiveCardByUserId(cardRequestDTO.getUserId()) == 3) {
             throw new BadRequestException("The card limit has been exceeded ");
         }
-        Card card = cardRepository.save(cardMapper.toEntity(cardRequestDTO, userRepository));
+        Card card = cardRepository.save(cardMapper.toEntity(cardRequestDTO));
         idempotencyRecordRepository.save(new IdempotencyRecord(idempotencyKey, card.getId()));
         return new DataDTO<>(cardMapper.toDto(card));
     }

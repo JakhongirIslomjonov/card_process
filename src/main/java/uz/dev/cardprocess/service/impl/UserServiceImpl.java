@@ -1,6 +1,7 @@
 package uz.dev.cardprocess.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,7 +24,9 @@ import uz.dev.cardprocess.service.UserService;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -39,8 +42,9 @@ public class UserServiceImpl implements UserService {
             try {
                 Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword()));
                 token = jwtService.genToken((UserDetails) auth.getPrincipal());
-            } catch (AuthenticationException e) {
-                throw new BadRequestException(e.getMessage());
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new BadRequestException("error this save process");
             }
             return new DataDTO<>(new TokenDTO(token));
         }

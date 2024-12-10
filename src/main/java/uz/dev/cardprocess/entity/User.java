@@ -1,12 +1,12 @@
 package uz.dev.cardprocess.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import uz.dev.cardprocess.entity.base.Auditable;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,25 +18,26 @@ import java.util.List;
 @Builder
 @Table(name = "users")
 @Entity
-public class User  implements UserDetails {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
     private String fullName;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private List<Role> roles;
-
+    @Email
     @Column(unique = true)
     private String email;
 
     @Size(min = 8)
+    @NotBlank
     private String password;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return roles;
     }
 
     @Override
@@ -44,23 +45,5 @@ public class User  implements UserDetails {
         return email;
     }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return false;
-    }
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return false;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return false;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return false;
-    }
 }

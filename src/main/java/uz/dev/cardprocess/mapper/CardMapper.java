@@ -8,17 +8,12 @@ import uz.dev.cardprocess.repository.UserRepository;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = "spring")
 public interface CardMapper {
-    @Mapping(source = "userId", target = "user")
-    Card toEntity(CardResponseDTO car);
-
-    @Mapping(target = "user", source = "userId")
-    Card toEntity(CardRequestDTO cardRequestDTO, @Context UserRepository userRepository);
+    Card toEntity(CardRequestDTO cardRequestDTO);
 
 
-    @Mapping(source = "user", target = "userId")
+
     CardResponseDTO toDto(Card card);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-
     Card partialUpdate(CardResponseDTO car, @MappingTarget Card card);
 }
