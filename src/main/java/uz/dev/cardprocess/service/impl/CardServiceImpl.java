@@ -29,6 +29,7 @@ public class CardServiceImpl implements CardService {
     private final CardUtil cardUtil;
     private final CardMapper cardMapper;
     private final UserRepository userRepository;
+    private final  String idempotencyKey = UUID.randomUUID().toString();
 
     @Override
     public DataDTO<CardResponseDTO> createCard(UUID idempotencyKey, CardRequestDTO cardRequestDTO) {
@@ -59,7 +60,7 @@ public class CardServiceImpl implements CardService {
         return new DataDTO<>(responseMap);*/
 
         return ResponseEntity.status(HttpStatus.OK)
-                .eTag(generateETag(card))
+                .eTag(String.valueOf(idempotencyKey))
                 .body(cardMapper.toDto(card));
     }
 
@@ -80,8 +81,8 @@ public class CardServiceImpl implements CardService {
     private Card checkEtag(String eTag, UUID cardId) {
 
         Card card = cardUtil.checkCardExistence(cardId);
-        String tag = generateETag(card);
-        if (!tag.equals(eTag)) {
+
+        if (!(idempotencyKey.equals(eTag))) {
             throw new BadRequestException("ETag does not match");
         }
         return card;

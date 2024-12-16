@@ -1,5 +1,6 @@
 package uz.dev.cardprocess.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,13 +20,19 @@ public class CardController {
     private final CardService cardService;
 
     @PostMapping("/create-card")
-    public DataDTO<CardResponseDTO> cardResponseDTODataDTO(@RequestParam UUID idempotencyKey, @RequestBody CardRequestDTO cardRequestDTO) {
+    public DataDTO<CardResponseDTO> cardResponseDTODataDTO(@RequestHeader("Idempotency-Key") UUID idempotencyKey, @RequestBody @Valid CardRequestDTO cardRequestDTO) {
         return cardService.createCard(idempotencyKey, cardRequestDTO);
     }
 
-    @GetMapping("/{carId}")
+    @GetMapping("/get/{carId}")
     public ResponseEntity<?> getCardById(@PathVariable UUID carId) {
         return cardService.getCardById(carId);
     }
+
+    @PostMapping("/{cardId}/blocked")
+    public DataDTO<String> blockCard(@RequestHeader("If-Match")  String eTag, @PathVariable UUID cardId){
+        return cardService.blockCard(eTag,cardId);
+    }
+
 
 }
