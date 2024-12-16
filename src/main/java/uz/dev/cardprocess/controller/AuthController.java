@@ -20,10 +20,10 @@ public class AuthController {
 
     private final UserService userService;
 
-   /* @PostMapping("/login")
+    @PostMapping("/login")
     public DataDTO<TokenDTO> checkout(@RequestBody @Valid LoginDTO loginDTO) {
         return userService.checkLoginDetails(loginDTO);
-    }*/
+    }
 
     @PostMapping("/sign-up")
     public DataDTO<String> signUp(@RequestBody  @Valid SignUpDTO signUp) {

@@ -11,9 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -63,7 +61,7 @@ public class JwtService {
 
     public List<GrantedAuthority> getAuthorities(String token) {
         String authorities = getClaims(token).get("authorities", String.class);
-        return Arrays.stream(authorities.split(",")).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+        return Objects.nonNull(authorities) && !authorities.isEmpty() ? Arrays.stream(authorities.split(",")).map(SimpleGrantedAuthority::new).collect(Collectors.toList()) : Collections.emptyList();
     }
 
 

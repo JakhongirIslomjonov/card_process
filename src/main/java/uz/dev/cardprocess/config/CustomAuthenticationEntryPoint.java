@@ -27,6 +27,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         // Set response status and content type
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
+        System.out.println("request.getHeader(\"Authorization\") = " + request.getHeader("Authorization"));
 
         // Create an exception response
         ExceptionResponse exceptionResponse = new ExceptionResponse(

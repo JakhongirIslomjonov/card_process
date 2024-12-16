@@ -33,7 +33,7 @@ public class Auditable extends BaseAuditable {
 
     @UpdateTimestamp
     @Column(name = "update_at")
-    private LocalDateTime updateAt;
+    private LocalDateTime   updateAt;
 
     @Column(name = "updated_by")
     private Long updatedBy;
