@@ -29,9 +29,14 @@ public class CardController {
         return cardService.getCardById(carId);
     }
 
-    @PostMapping("/{cardId}/blocked")
-    public DataDTO<String> blockCard(@RequestHeader("If-Match")  String eTag, @PathVariable UUID cardId){
-        return cardService.blockCard(eTag,cardId);
+    @PostMapping("/{cardId}/block")
+    public DataDTO<String> blockCard(@RequestHeader("If-Match") String eTag, @PathVariable UUID cardId) {
+        return cardService.blockCard(eTag, cardId);
+    }
+
+    @PostMapping("/{cardId}/un-block")
+    public DataDTO<String> unBlockCard(@RequestHeader("If-Match") String eTag, @PathVariable UUID cardId) {
+        return cardService.unBlockCard(eTag, cardId);
     }
 
 
