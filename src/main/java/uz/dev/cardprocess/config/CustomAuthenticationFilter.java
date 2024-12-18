@@ -17,7 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import uz.dev.cardprocess.dto.LoginDTO;
 import uz.dev.cardprocess.dto.TokenDTO;
-import uz.dev.cardprocess.service.JwtService;
+import uz.dev.cardprocess.service.jwt.JwtService;
 
 import java.io.IOException;
 

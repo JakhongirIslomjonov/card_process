@@ -19,6 +19,6 @@ public interface CardService {
 
     DataDTO<String> unBlockCard(String eTag, UUID cardId);
 
-    DataDTO<DebitResponseDTO> debitCard(UUID idempotencyKey, DebitRequestDTO debitRequestDTO);
+    DataDTO<DebitResponseDTO> debitCard(UUID idempotencyKey, DebitRequestDTO debitRequestDTO, UUID carId);
 
 }

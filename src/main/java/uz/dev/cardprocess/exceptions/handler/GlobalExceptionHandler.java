@@ -3,6 +3,7 @@ package uz.dev.cardprocess.exceptions.handler;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.sentry.Sentry;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import uz.dev.cardprocess.dto.AppErrorDTO;
+import uz.dev.cardprocess.dto.DataDTO;
 import uz.dev.cardprocess.exceptions.BadRequestException;
 import uz.dev.cardprocess.exceptions.ExceptionResponse;
 import uz.dev.cardprocess.exceptions.NotFoundException;
@@ -90,14 +93,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ExceptionResponse> handleMethodArgumentTypeMismatch(BadRequestException e) {
+    public ResponseEntity<DataDTO<?>> handleMethodArgumentTypeMismatch(BadRequestException e) {
         Sentry.captureException(e); // Sentryga yuborish
-        ExceptionResponse response = new ExceptionResponse(
-                HttpStatus.BAD_REQUEST,
-                e.getMessage(),
-                LocalDateTime.now()
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return ResponseEntity.ok(new DataDTO<>(new AppErrorDTO(HttpStatus.BAD_REQUEST, e.getMessage())));
     }
 
     @ExceptionHandler(RuntimeException.class)

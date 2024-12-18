@@ -1,8 +1,7 @@
-package uz.dev.cardprocess.service;
+package uz.dev.cardprocess.service.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;

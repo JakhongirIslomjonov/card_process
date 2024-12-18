@@ -33,7 +33,6 @@ public class CardServiceImpl implements CardService {
     private final UserRepository userRepository;
     private final String idempotencyKey = UUID.randomUUID().toString();
     private final TransactionRepository transactionRepository;
-    private final DataSourceTransactionManager transactionManager;
     private final DebitMapper debitMapper;
 
     @Override
@@ -82,15 +81,41 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    public DataDTO<DebitResponseDTO> debitCard(UUID idempotencyKey, DebitRequestDTO debitRequestDTO) {
-        IdempotencyRecord idempotencyRecord = idempotencyRecordRepository
-                .findById(idempotencyKey).orElseThrow(() -> new BadRequestException("invalid idempotencyKey or not found "));
+    public DataDTO<DebitResponseDTO> debitCard(UUID idempotencyKey, DebitRequestDTO debitRequestDTO, UUID cardId) {
+
+        checkStatus(cardRepository.findById(cardId).get());
+        if (idempotencyRecordRepository
+                .findById(idempotencyKey).isPresent()) {
+            var transaction = transactionRepository
+                    .findById(idempotencyRecordRepository
+                            .findById(idempotencyKey).get().getTransactionId());
+            if (transaction.isPresent()) {
+                return new DataDTO<>(debitMapper.toDebitResponseDto(transaction.get()));
+            }
+        }
         Card card = cardRepository
-                .findById(idempotencyRecord.getCardId()).orElseThrow(() -> new BadRequestException("card not found "));
-        checkStatus(card);
-        Transaction transaction = transactionRepository
-                .findById(idempotencyRecord.getTransactionId()).orElseThrow(() -> new BadRequestException("transaction not found "));
-        return new DataDTO<>(debitMapper.toDebitResponseDto(transaction));
+                .findById(idempotencyRecordRepository
+                        .findById(idempotencyKey).get().getCardId()).orElseThrow(() -> new BadRequestException("card not found "));
+        checkBalanceAndWithdraw(card, debitRequestDTO);
+
+
+    }
+
+    private Transaction checkBalanceAndWithdraw(Card card, DebitRequestDTO debitRequestDTO) {
+        if (card.getCurrency().equals(debitRequestDTO.getCurrency()) && card.getBalance() < debitRequestDTO.getAmount()) {
+            throw new BadRequestException("Mablag'da hatolik");
+        }
+        if (!card.getCurrency().equals(debitRequestDTO.getCurrency())) {
+            long fetchCurrencyRate = cardUtil.fetchCurrencyRate();
+            long amountCardCurrency;
+            amountCardCurrency = cardUtil.sumWithCurrencyRate(card,debitRequestDTO,fetchCurrencyRate);
+
+         long resultBalance=card.getBalance()-amountCardCurrency;
+         card.setBalance(resultBalance);
+         cardRepository.save(card);
+         return
+
+        }
     }
 
     private void checkStatusUnBlock(Card card) {
