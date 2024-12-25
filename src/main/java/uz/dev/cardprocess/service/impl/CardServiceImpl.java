@@ -18,9 +18,11 @@ import uz.dev.cardprocess.repository.IdempotencyRecordRepository;
 import uz.dev.cardprocess.repository.TransactionRepository;
 import uz.dev.cardprocess.repository.UserRepository;
 import uz.dev.cardprocess.service.CardService;
+import uz.dev.cardprocess.service.TransactionService;
 import uz.dev.cardprocess.util.CardUtil;
 
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -31,9 +33,10 @@ public class CardServiceImpl implements CardService {
     private final CardUtil cardUtil;
     private final CardMapper cardMapper;
     private final UserRepository userRepository;
-    private final String idempotencyKey = UUID.randomUUID().toString();
     private final TransactionRepository transactionRepository;
     private final DebitMapper debitMapper;
+    private final TransactionService transactionService;
+    private final String idempotencyKey = UUID.randomUUID().toString();
 
     @Override
     public DataDTO<CardResponseDTO> createCard(UUID idempotencyKey, CardRequestDTO cardRequestDTO) {
@@ -82,8 +85,6 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public DataDTO<DebitResponseDTO> debitCard(UUID idempotencyKey, DebitRequestDTO debitRequestDTO, UUID cardId) {
-
-        checkStatus(cardRepository.findById(cardId).get());
         if (idempotencyRecordRepository
                 .findById(idempotencyKey).isPresent()) {
             var transaction = transactionRepository
@@ -93,12 +94,25 @@ public class CardServiceImpl implements CardService {
                 return new DataDTO<>(debitMapper.toDebitResponseDto(transaction.get()));
             }
         }
-        Card card = cardRepository
-                .findById(idempotencyRecordRepository
-                        .findById(idempotencyKey).get().getCardId()).orElseThrow(() -> new BadRequestException("card not found "));
-        checkBalanceAndWithdraw(card, debitRequestDTO);
+        Card card = cardUtil.checkCardExistence(cardId);
+        Transaction transaction = checkBalanceAndWithdraw(card, debitRequestDTO);
+        idempotencyRecordRepository.save(new IdempotencyRecord(idempotencyKey, cardId, transaction.getId()));
+        return new DataDTO<>(debitMapper.toDebitResponseDto(transaction));
 
 
+    }
+
+    @Override
+    public DataDTO<CreditResponseDTO> creditCard(UUID idempotencyKey, CreditRequestDTO creditRequestDTO, UUID carId) {
+        if (idempotencyRecordRepository.findById(idempotencyKey).isPresent()) {
+            Optional<Transaction> transaction = transactionRepository
+                    .findById(idempotencyRecordRepository.findById(idempotencyKey).get().getTransactionId());
+            if (transaction.isPresent()) {
+                return new DataDTO<>();
+            }
+
+        }
+return  null;
     }
 
     private Transaction checkBalanceAndWithdraw(Card card, DebitRequestDTO debitRequestDTO) {
@@ -108,14 +122,18 @@ public class CardServiceImpl implements CardService {
         if (!card.getCurrency().equals(debitRequestDTO.getCurrency())) {
             long fetchCurrencyRate = cardUtil.fetchCurrencyRate();
             long amountCardCurrency;
-            amountCardCurrency = cardUtil.sumWithCurrencyRate(card,debitRequestDTO,fetchCurrencyRate);
+            amountCardCurrency = cardUtil.sumWithCurrencyRate(card, debitRequestDTO, fetchCurrencyRate);
 
-         long resultBalance=card.getBalance()-amountCardCurrency;
-         card.setBalance(resultBalance);
-         cardRepository.save(card);
-         return
-
+            long resultBalance = card.getBalance() - amountCardCurrency;
+            card.setBalance(resultBalance);
+            cardRepository.save(card);
+            return transactionService.saveDebitTransaction(debitRequestDTO, resultBalance, card, fetchCurrencyRate);
         }
+
+        long resultBalance = card.getBalance() - debitRequestDTO.getAmount();
+        card.setBalance(resultBalance);
+        cardRepository.save(card);
+        return transactionService.saveDebitTransaction(debitRequestDTO, resultBalance, card, null);
     }
 
     private void checkStatusUnBlock(Card card) {
