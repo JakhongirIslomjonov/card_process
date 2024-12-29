@@ -1,5 +1,6 @@
 package uz.dev.cardprocess.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -20,9 +21,11 @@ public class DebitRequestDTO implements Serializable {
     @Positive
     private Long amount;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Currency currency;
 
     @NotNull
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private TransactionPurpose transactionPurpose;
 
     public DebitRequestDTO(String externalId, Long amount, Currency currency, TransactionPurpose transactionPurpose) {
