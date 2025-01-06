@@ -1,10 +1,11 @@
 package uz.dev.cardprocess.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 import uz.dev.cardprocess.entity.enums.Currency;
+
+import javax.validation.constraints.Positive;
 
 @Getter
 @Setter

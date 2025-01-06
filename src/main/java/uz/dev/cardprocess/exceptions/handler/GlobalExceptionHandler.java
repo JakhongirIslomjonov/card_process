@@ -3,8 +3,6 @@ package uz.dev.cardprocess.exceptions.handler;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.sentry.Sentry;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +21,7 @@ import uz.dev.cardprocess.exceptions.ExceptionResponse;
 import uz.dev.cardprocess.exceptions.NotFoundException;
 
 
+import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
