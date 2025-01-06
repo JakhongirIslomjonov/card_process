@@ -1,15 +1,15 @@
 package uz.dev.cardprocess.entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import uz.dev.cardprocess.entity.base.Auditable;
 import uz.dev.cardprocess.entity.enums.RoleName;
 
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Table;
 
 
 @Getter
