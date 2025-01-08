@@ -40,8 +40,12 @@ public class CardController {
 
     @PostMapping("/{cardId}/debit")
     public DataDTO<DebitResponseDTO> debitCard(@RequestHeader("Idempotency-Key") UUID idempotencyKey, @RequestBody DebitRequestDTO debitRequestDTO, @PathVariable UUID cardId) {
-        return cardService.debitCard(idempotencyKey, debitRequestDTO,cardId);
+        return cardService.debitCard(idempotencyKey, debitRequestDTO, cardId);
     }
 
+    @PostMapping("/{cardId}/credit")
+    public DataDTO<CreditResponseDTO> creditResponseDTODataDTO(@RequestHeader("Idempotency-Key") UUID idempotencyKey, @RequestBody CreditRequestDTO creditRequestDTO, @PathVariable UUID cardId) {
+        return cardService.creditCard(idempotencyKey, creditRequestDTO, cardId);
+    }
 
 }
