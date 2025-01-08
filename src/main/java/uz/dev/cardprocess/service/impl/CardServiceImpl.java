@@ -10,9 +10,11 @@ import uz.dev.cardprocess.entity.Card;
 import uz.dev.cardprocess.entity.IdempotencyRecord;
 import uz.dev.cardprocess.entity.Transaction;
 import uz.dev.cardprocess.entity.enums.CardStatus;
+import uz.dev.cardprocess.entity.enums.Currency;
 import uz.dev.cardprocess.exceptions.BadRequestException;
 import uz.dev.cardprocess.mapper.CardMapper;
 import uz.dev.cardprocess.mapper.DebitMapper;
+import uz.dev.cardprocess.mapper.TransactionMapper;
 import uz.dev.cardprocess.repository.CardRepository;
 import uz.dev.cardprocess.repository.IdempotencyRecordRepository;
 import uz.dev.cardprocess.repository.TransactionRepository;
@@ -37,6 +39,7 @@ public class CardServiceImpl implements CardService {
     private final DebitMapper debitMapper;
     private final TransactionService transactionService;
     private final String idempotencyKey = UUID.randomUUID().toString();
+    private final TransactionMapper transactionMapper;
 
     @Override
     public DataDTO<CardResponseDTO> createCard(UUID idempotencyKey, CardRequestDTO cardRequestDTO) {
@@ -108,11 +111,28 @@ public class CardServiceImpl implements CardService {
             Optional<Transaction> transaction = transactionRepository
                     .findById(idempotencyRecordRepository.findById(idempotencyKey).get().getTransactionId());
             if (transaction.isPresent()) {
-                return new DataDTO<>();
+                return new DataDTO<>(transactionMapper.toDto(transaction.get()));
             }
-
         }
-return  null;
+        Card card = cardUtil.checkCardExistence(carId);
+        Transaction transaction = addBalance(card, creditRequestDTO);
+        idempotencyRecordRepository.save(new IdempotencyRecord(idempotencyKey, carId, transaction.getId()));
+        return new DataDTO<>(transactionMapper.toDto(transaction));
+    }
+
+    private Transaction addBalance(Card card, CreditRequestDTO creditRequestDTO) {
+        checkStatus(card);
+        Long amount = creditRequestDTO.getAmount();
+        Long exchangeRate = null;
+        if (!creditRequestDTO.getCurrency().equals(card.getCurrency())) {
+            exchangeRate = cardUtil.fetchCurrencyRate();
+            amount = creditRequestDTO.getCurrency().equals(Currency.USD) ? creditRequestDTO.getAmount() * exchangeRate : creditRequestDTO.getAmount() / exchangeRate;
+        }
+        long resultBalance = card.getBalance() + amount;
+        card.setBalance(resultBalance);
+        cardRepository.save(card);
+        return transactionService.saveDebitTransaction(creditRequestDTO, resultBalance, card, exchangeRate);
+
     }
 
     private Transaction checkBalanceAndWithdraw(Card card, DebitRequestDTO debitRequestDTO) {

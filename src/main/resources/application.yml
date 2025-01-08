@@ -8,22 +8,24 @@ spring:
     username: postgres
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
         types:
           print:
-            warn :false
+            warn: false
     show-sql: true
+
 sentry:
   dsn: https://809f46fddddb00ebd21ad7b4d24b1a26@o4508398301872128.ingest.de.sentry.io/4508408443240528
   environment: "development"
   traces-sample-rate: 1.0    # 1.0 - barcha requestlarni kuzatadi
-  debug: false                # Debug rejimini yoqing (faqat test uchun)'
+  debug: false                # Debug rejimini yoqing (faqat test uchun)
 
 server:
   port: 8081
+
 springdoc:
   swagger-ui:
     path: /swagger-ui
@@ -33,5 +35,19 @@ springdoc:
     tags-sorter: alpha
     display-request-duration: true
     doc-expansion: "none"
-#  api-docs:
-#    path: /v3/docs
+
+camunda:
+  bpm:
+    history-level: full        # Tarix darajasi (full, audit, none)
+    database:
+      type: postgres           # Ma'lumotlar bazasi turi
+      schema-update: true       # Ma'lumotlar bazasini yangilash
+      jdbc-driver: org.postgresql.Driver # JDBC drayveri
+      jdbc-url: jdbc:postgresql://localhost:5432/camunda # Ma'lumotlar bazasi URL manzili
+      jdbc-username: postgres    # Foydalanuvchi nomi
+      jdbc-password: 0095    # Parol
+    engine:
+      name: card_process               # Dastur nomi
+    rest:
+      enabled: true               # REST API ni yoqish
+      url-pattern: /camunda/api/* # REST API manzili

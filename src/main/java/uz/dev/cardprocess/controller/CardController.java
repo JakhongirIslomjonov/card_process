@@ -1,15 +1,13 @@
 package uz.dev.cardprocess.controller;
 
-import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import uz.dev.cardprocess.dto.CardRequestDTO;
-import uz.dev.cardprocess.dto.CardResponseDTO;
-import uz.dev.cardprocess.dto.DataDTO;
-import uz.dev.cardprocess.dto.DebitRequestDTO;
+import uz.dev.cardprocess.dto.*;
 import uz.dev.cardprocess.service.CardService;
 
+import javax.validation.Valid;
 import java.util.Map;
 import java.util.UUID;
 
@@ -41,9 +39,13 @@ public class CardController {
     }
 
     @PostMapping("/{cardId}/debit")
-    public DataDTO<?> debitCard(@RequestHeader("Idempotency-Key") UUID idempotencyKey, @RequestBody @Valid DebitRequestDTO debitRequestDTO, @PathVariable UUID cardId) {
-        return cardService.debitCard(idempotencyKey, debitRequestDTO,cardId);
+    public DataDTO<DebitResponseDTO> debitCard(@RequestHeader("Idempotency-Key") UUID idempotencyKey, @RequestBody DebitRequestDTO debitRequestDTO, @PathVariable UUID cardId) {
+        return cardService.debitCard(idempotencyKey, debitRequestDTO, cardId);
     }
 
+    @PostMapping("/{cardId}/credit")
+    public DataDTO<CreditResponseDTO> creditResponseDTODataDTO(@RequestHeader("Idempotency-Key") UUID idempotencyKey, @RequestBody CreditRequestDTO creditRequestDTO, @PathVariable UUID cardId) {
+        return cardService.creditCard(idempotencyKey, creditRequestDTO, cardId);
+    }
 
 }
