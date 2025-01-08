@@ -1,0 +1,25 @@
+[33mf8d2e1e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: checkout: moving from 2d2c2cadf8ee6ad15f8d6e9f010187145290cd4c to main
+[33m2d2c2ca[m HEAD@{1}: reset: moving to HEAD~1
+[33mf8d2e1e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{2}: reset: moving to f8d2e1e873e0c8d5e246b59a61fd878998d01e9e
+[33m2d2c2ca[m HEAD@{3}: reset: moving to 2d2c2cadf8ee6ad15f8d6e9f010187145290cd4c
+[33me21c544[m HEAD@{4}: reset: moving to e21c54493cbbcbcae66b03f42b91b8888aae2b0f
+[33mf83d1f4[m[33m ([m[1;31morigin/detached2[m[33m)[m HEAD@{5}: commit (merge): Merge branch 'main' into HEAD
+[33mba79544[m[33m ([m[1;31morigin/detached[m[33m)[m HEAD@{6}: commit: add all update method
+[33m2d2c2ca[m HEAD@{7}: checkout: moving from main to 2d2c2cadf8ee6ad15f8d6e9f010187145290cd4c
+[33mf8d2e1e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{8}: commit: add credit update method
+[33m2d2c2ca[m HEAD@{9}: commit: add credit update method
+[33me21c544[m HEAD@{10}: commit: add credit method
+[33md2164bc[m HEAD@{11}: commit: add configuration debit method card API
+[33m00f6447[m HEAD@{12}: commit: add configuration debit method card API
+[33m87cf610[m HEAD@{13}: commit: add configuration block method card API
+[33m7e6e70a[m HEAD@{14}: commit: add configuration block method card API
+[33m4124b68[m HEAD@{15}: commit: add configuration get card API
+[33m5a37911[m HEAD@{16}: commit: add configuration Create card API
+[33md1c531b[m HEAD@{17}: commit: add configuration Auth signUp
+[33me407278[m HEAD@{18}: commit: add configuration Auth signUp
+[33mc16f970[m HEAD@{19}: commit: add configuration Auth
+[33m280a78f[m HEAD@{20}: commit: jwt add sevice filter
+[33m8339c4e[m HEAD@{21}: commit: jwt add sevice filter
+[33m7883570[m HEAD@{22}: commit: jwt add sevice filter
+[33m5e2fee4[m HEAD@{23}: commit: exception added
+[33me68b91d[m HEAD@{24}: clone: from https://github.com/JakhongirIslomjonov/card_process.git
