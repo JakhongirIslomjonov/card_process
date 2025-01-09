@@ -2,7 +2,6 @@ package uz.dev.cardprocess.exceptions.handler;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.sentry.Sentry;
-
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -20,8 +19,6 @@ import uz.dev.cardprocess.dto.DataDTO;
 import uz.dev.cardprocess.exceptions.BadRequestException;
 import uz.dev.cardprocess.exceptions.ExceptionResponse;
 import uz.dev.cardprocess.exceptions.NotFoundException;
-
-
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;

@@ -14,7 +14,7 @@ import java.io.Serializable;
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DataDTO<T> implements Serializable {
+public class    DataDTO<T> implements Serializable {
 
     private T data;
 
