@@ -3,12 +3,12 @@ package uz.dev.cardprocess.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 import uz.dev.cardprocess.entity.enums.Currency;
 import uz.dev.cardprocess.entity.enums.TransactionPurpose;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
 import java.io.Serializable;
 
 

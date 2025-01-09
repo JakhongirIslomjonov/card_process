@@ -1,12 +1,13 @@
 package uz.dev.cardprocess.entity;
 
+import jakarta.persistence.*;
 import lombok.*;
 import uz.dev.cardprocess.entity.base.Auditable;
 import uz.dev.cardprocess.entity.enums.Currency;
 import uz.dev.cardprocess.entity.enums.TransactionType;
 import uz.dev.cardprocess.entity.enums.TransactionPurpose;
 
-import javax.persistence.*;
+
 
 @AllArgsConstructor
 @NoArgsConstructor

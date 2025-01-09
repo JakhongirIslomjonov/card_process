@@ -1,5 +1,6 @@
 package uz.dev.cardprocess.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,7 +12,7 @@ import uz.dev.cardprocess.dto.SignUpDTO;
 import uz.dev.cardprocess.dto.TokenDTO;
 import uz.dev.cardprocess.service.UserService;
 
-import javax.validation.Valid;
+
 
 @RestController
 @RequestMapping("/api/v1/auth")

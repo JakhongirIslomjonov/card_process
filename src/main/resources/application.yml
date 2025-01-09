@@ -36,18 +36,3 @@ springdoc:
     display-request-duration: true
     doc-expansion: "none"
 
-camunda:
-  bpm:
-    history-level: full        # Tarix darajasi (full, audit, none)
-    database:
-      type: postgres           # Ma'lumotlar bazasi turi
-      schema-update: true       # Ma'lumotlar bazasini yangilash
-      jdbc-driver: org.postgresql.Driver # JDBC drayveri
-      jdbc-url: jdbc:postgresql://localhost:5432/camunda # Ma'lumotlar bazasi URL manzili
-      jdbc-username: postgres    # Foydalanuvchi nomi
-      jdbc-password: 0095    # Parol
-    engine:
-      name: card_process               # Dastur nomi
-    rest:
-      enabled: true               # REST API ni yoqish
-      url-pattern: /camunda/api/* # REST API manzili

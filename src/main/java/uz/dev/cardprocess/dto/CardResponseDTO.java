@@ -2,13 +2,14 @@ package uz.dev.cardprocess.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 import uz.dev.cardprocess.entity.Card;
 import uz.dev.cardprocess.entity.enums.CardStatus;
 import uz.dev.cardprocess.entity.enums.Currency;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PositiveOrZero;
+
 import java.io.Serializable;
 import java.util.UUID;
 
