@@ -52,7 +52,7 @@ public class SecurityConfig {
         http.exceptionHandling(m -> m.authenticationEntryPoint(customAuthenticationEntryPoint));
         http.csrf(AbstractHttpConfigurer::disable);
         http.authorizeHttpRequests(m -> m
-                .antMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/api/v1/auth/**").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/api/v1/auth/**").permitAll()
                 .anyRequest().authenticated());
         http.addFilterBefore(new CustomAuthenticationFilter(authenticationManager, objectMapper, jwtService), UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
