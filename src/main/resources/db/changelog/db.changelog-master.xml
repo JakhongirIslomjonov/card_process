@@ -8,4 +8,13 @@
     <changeSet id="1" author="Islomjonov Jaxongir">
         <sqlFile path="db/sql/functions.sql"/>
     </changeSet>
+
+    <changeSet id="2" author="Islomjonov Jaxongir">
+        <sqlFile path="db/sql/create_user_role__table.sql"/>
+    </changeSet>
+
+    <changeSet id="3" author="Islomjonov Jaxongir">
+    <sqlFile path="db/sql/create_card.sql"/>
+</changeSet>
+
 </databaseChangeLog>
