@@ -6,8 +6,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uz.dev.cardprocess.dto.*;
+import uz.dev.cardprocess.entity.enums.Currency;
+import uz.dev.cardprocess.entity.enums.TransactionType;
 import uz.dev.cardprocess.service.CardService;
-
+import uz.dev.cardprocess.service.TransactionService;
 
 
 import java.util.UUID;
@@ -18,6 +20,7 @@ import java.util.UUID;
 public class CardController {
 
     private final CardService cardService;
+    private final TransactionService transactionService;
 
     @PostMapping("/create-card")
     public DataDTO<CardResponseDTO> cardResponseDTODataDTO(@RequestHeader("Idempotency-Key") UUID idempotencyKey, @RequestBody @Valid CardRequestDTO cardRequestDTO) {
@@ -49,4 +52,14 @@ public class CardController {
         return cardService.creditCard(idempotencyKey, creditRequestDTO, cardId);
     }
 
+    @GetMapping("/{cardId}/transaction")
+    public DataDTO<?> transactionResponse(@PathVariable UUID cardId,
+                                          @RequestParam(name = "type", required = false) TransactionType type,
+                                       /*   @RequestParam(name = "transaction_id", required = false) UUID transactionId,
+                                          @RequestParam(name = "external_id", required = false) String externalId,
+                                          @RequestParam(name = "currency", required = false) Currency currency,*/
+                                          @RequestParam(name = "page", required = false, defaultValue = "0") int page,
+                                          @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
+        return transactionService.getTransaction(cardId,type,/*transactionId,externalId,currency,*/page,size);
+    }
 }

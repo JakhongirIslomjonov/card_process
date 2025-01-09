@@ -22,4 +22,6 @@ public interface CardService {
     DataDTO<DebitResponseDTO> debitCard(UUID idempotencyKey, DebitRequestDTO debitRequestDTO, UUID carId);
 
     DataDTO<CreditResponseDTO> creditCard(UUID idempotencyKey, CreditRequestDTO creditRequestDTO, UUID carId);
+
+
 }

@@ -1,6 +1,7 @@
 package uz.dev.cardprocess.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -26,7 +27,7 @@ import uz.dev.cardprocess.util.CardUtil;
 
 import java.util.Optional;
 import java.util.UUID;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CardServiceImpl implements CardService {
@@ -40,10 +41,12 @@ public class CardServiceImpl implements CardService {
     private final TransactionService transactionService;
     private final String idempotencyKey = UUID.randomUUID().toString();
     private final TransactionMapper transactionMapper;
+    private final LogServiceImpl logServiceImpl;
 
     @Override
     public DataDTO<CardResponseDTO> createCard(UUID idempotencyKey, CardRequestDTO cardRequestDTO) {
         if (userRepository.findById(cardRequestDTO.getUserId()).isEmpty()) {
+            logServiceImpl.writeLog("/log/create_card", "user not found : " ,cardRequestDTO.getUserId());
             throw new BadRequestException("user not found");
         }
         if (idempotencyRecordRepository.findById(idempotencyKey).isPresent()) {
@@ -51,6 +54,7 @@ public class CardServiceImpl implements CardService {
             return new DataDTO<>(cardMapper.toDto(card));
         }
         if (cardRepository.findActiveCardByUserId(cardRequestDTO.getUserId()) == 3) {
+            logServiceImpl.writeLog("/log/create_card", "he card limit has been exceeded : " ,cardRequestDTO.getUserId());
             throw new BadRequestException("The card limit has been exceeded ");
         }
         Card card = cardRepository.save(cardMapper.toEntity(cardRequestDTO));
@@ -73,6 +77,7 @@ public class CardServiceImpl implements CardService {
         checkStatus(card);
         card.setStatus(CardStatus.BLOCKED);
         cardRepository.save(card);
+        logServiceImpl.writeLog("/log/blocked_card","this card blocked " , String.valueOf(card.getId()));
         return new DataDTO<>("card block");
 
     }
@@ -83,6 +88,7 @@ public class CardServiceImpl implements CardService {
         checkStatusUnBlock(card);
         card.setStatus(CardStatus.ACTIVE);
         cardRepository.save(card);
+        logServiceImpl.writeLog("/log/blocked_card","this card unBlocked " , String.valueOf(card.getId()));
         return new DataDTO<>("card unBlock");
     }
 
@@ -100,6 +106,7 @@ public class CardServiceImpl implements CardService {
         Card card = cardUtil.checkCardExistence(cardId);
         Transaction transaction = checkBalanceAndWithdraw(card, debitRequestDTO);
         idempotencyRecordRepository.save(new IdempotencyRecord(idempotencyKey, cardId, transaction.getId()));
+        logServiceImpl.writeLog("/log/debit_card","this card debit " , transaction.getAmount());
         return new DataDTO<>(debitMapper.toDebitResponseDto(transaction));
 
 
@@ -117,6 +124,7 @@ public class CardServiceImpl implements CardService {
         Card card = cardUtil.checkCardExistence(carId);
         Transaction transaction = addBalance(card, creditRequestDTO);
         idempotencyRecordRepository.save(new IdempotencyRecord(idempotencyKey, carId, transaction.getId()));
+        logServiceImpl.writeLog("/log/credit_card","this card credit balance " , transaction.getAmount());
         return new DataDTO<>(transactionMapper.toDto(transaction));
     }
 
@@ -129,6 +137,7 @@ public class CardServiceImpl implements CardService {
             amount = creditRequestDTO.getCurrency().equals(Currency.USD) ? creditRequestDTO.getAmount() * exchangeRate : creditRequestDTO.getAmount() / exchangeRate;
         }
         long resultBalance = card.getBalance() + amount;
+
         card.setBalance(resultBalance);
         cardRepository.save(card);
         return transactionService.saveDebitTransaction(creditRequestDTO, resultBalance, card, exchangeRate);
@@ -137,6 +146,7 @@ public class CardServiceImpl implements CardService {
 
     private Transaction checkBalanceAndWithdraw(Card card, DebitRequestDTO debitRequestDTO) {
         if (card.getCurrency().equals(debitRequestDTO.getCurrency()) && card.getBalance() < debitRequestDTO.getAmount()) {
+            logServiceImpl.writeLog("/log/debit_card","Mablag'da hatolik " , String.valueOf(card.getId()));
             throw new BadRequestException("Mablag'da hatolik");
         }
         if (!card.getCurrency().equals(debitRequestDTO.getCurrency())) {

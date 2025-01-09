@@ -3,11 +3,12 @@ package uz.dev.cardprocess.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uz.dev.cardprocess.entity.enums.Currency;
 
 
-
+@NoArgsConstructor
 @Getter
 @Setter
 public class CreditRequestDTO {

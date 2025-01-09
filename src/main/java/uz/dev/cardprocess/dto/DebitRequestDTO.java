@@ -1,6 +1,7 @@
 package uz.dev.cardprocess.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.validation.constraints.NotNull;
@@ -12,8 +13,11 @@ import uz.dev.cardprocess.entity.enums.TransactionPurpose;
 import java.io.Serializable;
 
 
-@Data
 
+@NoArgsConstructor
+@Setter
+@Getter
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DebitRequestDTO implements Serializable {
 
     @JsonProperty("external_id")

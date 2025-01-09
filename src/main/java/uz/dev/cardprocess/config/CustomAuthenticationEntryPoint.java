@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
-public abstract class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+public  class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     private final ObjectMapper objectMapper;
 
