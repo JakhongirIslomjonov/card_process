@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: springboot-app
+    container_name: springboot-app-new
     ports:
       - "8081:8081"
     depends_on:
@@ -15,7 +15,7 @@ services:
 
   postgres-db:
     image: postgres
-    container_name: postgres-db
+    container_name: postgres-db-new
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=0095

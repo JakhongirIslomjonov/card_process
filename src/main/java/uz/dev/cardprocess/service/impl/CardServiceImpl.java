@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Service;
 import uz.dev.cardprocess.dto.*;
 import uz.dev.cardprocess.entity.Card;
@@ -23,7 +22,6 @@ import uz.dev.cardprocess.repository.UserRepository;
 import uz.dev.cardprocess.service.CardService;
 import uz.dev.cardprocess.service.TransactionService;
 import uz.dev.cardprocess.util.CardUtil;
-
 
 import java.util.Optional;
 import java.util.UUID;

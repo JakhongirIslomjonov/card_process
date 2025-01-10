@@ -1,13 +1,9 @@
 package uz.dev.cardprocess.entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
-import uz.dev.cardprocess.entity.base.Auditable;
 import uz.dev.cardprocess.entity.enums.RoleName;
 
 
@@ -20,7 +16,12 @@ import uz.dev.cardprocess.entity.enums.RoleName;
 @NoArgsConstructor
 @Builder
 @Table(name = "roles")
-public class Role extends Auditable implements GrantedAuthority {
+public class Role  implements GrantedAuthority {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
+    private String fullName;
 
     @Enumerated(EnumType.STRING)
     private RoleName roleName;
