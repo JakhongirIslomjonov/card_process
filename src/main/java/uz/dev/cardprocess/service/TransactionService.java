@@ -20,8 +20,4 @@ public interface TransactionService {
     Transaction saveDebitTransaction(CreditRequestDTO creditRequestDTO, long newBalance, Card card, Long exchangeRate);
 
     DataDTO<?> getTransaction(UUID cardId, TransactionType type, int page, int size);
-
-/*
-    DataDTO<Page<ResponseTrDto>> getTransaction(UUID cardId, TransactionType type, UUID transactionId, String externalId, Currency currency, int page, int size);
-*/
 }

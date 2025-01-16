@@ -2,9 +2,11 @@ package uz.dev.cardprocess.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uz.dev.cardprocess.dto.*;
 import uz.dev.cardprocess.entity.Card;
 import uz.dev.cardprocess.entity.IdempotencyRecord;
@@ -43,11 +45,14 @@ public class CardServiceImpl implements CardService {
     private final LogServiceImpl logServiceImpl;
 
     @Override
+    @Transactional
     public DataDTO<CardResponseDTO> createCard(UUID idempotencyKey, CardRequestDTO cardRequestDTO) {
         Optional<IdempotencyRecord> recordOptional = idempotencyRecordRepository.findById(idempotencyKey);
         if (recordOptional.isPresent()) {
             logServiceImpl.writeLog("/log/create_card", "already create this idempotency-key :  ", String.valueOf(idempotencyKey));
-            return new DataDTO<CardResponseDTO>(cardMapper.toDto(cardRepository.findById(recordOptional.get().getCardId()).get()));
+            Card existingCard = cardRepository.findById(recordOptional.get().getCardId())
+                    .orElseThrow(() -> new BadRequestException("Card not found for the given idempotency record"));
+            return new DataDTO<>(cardMapper.toDto(existingCard));
         }
         if (cardRepository.findActiveCardByUserId(cardRequestDTO.getUserId()) == 3) {
             logServiceImpl.writeLog("/log/create_card", "he card limit has been exceeded : ", cardRequestDTO.getUserId());
@@ -58,15 +63,17 @@ public class CardServiceImpl implements CardService {
         return new DataDTO<>(cardMapper.toDto(card));
     }
 
+    @Cacheable(value = "cards", key = "#cardId")
     @Override
-    public ResponseEntity<?> getCardById(UUID cardId) {
+    public ResponseEntity<CardResponseDTO> getCardById(UUID cardId) {
         Card card = cardRepository.findById(cardId)
-                .orElseThrow(() -> new BadRequestException("Card not found by this id: " + cardId));
+                .orElseThrow(() -> new BadRequestException("Card with ID " + cardId + " not found"));
         String eTag = etagGen(card);
         return ResponseEntity.ok()
                 .header(HttpHeaders.ETAG, eTag)
                 .body(cardMapper.toDto(card));
     }
+
 
     @Override
     public DataDTO<String> blockCard(String eTag, UUID cardId) {
@@ -76,7 +83,6 @@ public class CardServiceImpl implements CardService {
         cardRepository.save(card);
         logServiceImpl.writeLog("/log/blocked_card", "this card blocked ", String.valueOf(card.getId()));
         return new DataDTO<>("card block");
-
     }
 
     @Override
@@ -91,11 +97,10 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public DataDTO<DebitResponseDTO> debitCard(UUID idempotencyKey, DebitRequestDTO debitRequestDTO, UUID cardId) {
-        if (idempotencyRecordRepository
-                .findById(idempotencyKey).isPresent()) {
-            var transaction = transactionRepository
-                    .findById(idempotencyRecordRepository
-                            .findById(idempotencyKey).get().getTransactionId());
+        Optional<IdempotencyRecord> recordOptional = idempotencyRecordRepository
+                .findById(idempotencyKey);
+        if (recordOptional.isPresent()) {
+            var transaction = transactionRepository.findById(recordOptional.get().getTransactionId());
             if (transaction.isPresent()) {
                 return new DataDTO<>(debitMapper.toDebitResponseDto(transaction.get()));
             }
@@ -105,15 +110,14 @@ public class CardServiceImpl implements CardService {
         idempotencyRecordRepository.save(new IdempotencyRecord(idempotencyKey, cardId, transaction.getId()));
         logServiceImpl.writeLog("/log/debit_card", "this card debit ", transaction.getAmount());
         return new DataDTO<>(debitMapper.toDebitResponseDto(transaction));
-
-
     }
 
     @Override
     public DataDTO<CreditResponseDTO> creditCard(UUID idempotencyKey, CreditRequestDTO creditRequestDTO, UUID carId) {
-        if (idempotencyRecordRepository.findById(idempotencyKey).isPresent()) {
+        Optional<IdempotencyRecord> recordOptional = idempotencyRecordRepository.findById(idempotencyKey);
+        if (recordOptional.isPresent()) {
             Optional<Transaction> transaction = transactionRepository
-                    .findById(idempotencyRecordRepository.findById(idempotencyKey).get().getTransactionId());
+                    .findById(recordOptional.get().getTransactionId());
             if (transaction.isPresent()) {
                 return new DataDTO<>(transactionMapper.toDto(transaction.get()));
             }
@@ -175,6 +179,8 @@ public class CardServiceImpl implements CardService {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new BadRequestException("Card not found by this id: " + cardId));
         String correctETag = "\"" + card.getId().toString() + "-" + card.getVersion() + "\"";
+        System.out.println(eTag);
+        System.out.println(correctETag);
         if (!eTag.equals(correctETag)) {
             throw new BadRequestException("eTag mismatch: Resource has been modified");
         }

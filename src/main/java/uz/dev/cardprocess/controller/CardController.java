@@ -55,11 +55,8 @@ public class CardController {
     @GetMapping("/{cardId}/transaction")
     public DataDTO<?> transactionResponse(@PathVariable UUID cardId,
                                           @RequestParam(name = "type", required = false) TransactionType type,
-                                       /*   @RequestParam(name = "transaction_id", required = false) UUID transactionId,
-                                          @RequestParam(name = "external_id", required = false) String externalId,
-                                          @RequestParam(name = "currency", required = false) Currency currency,*/
                                           @RequestParam(name = "page", required = false, defaultValue = "0") int page,
                                           @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
-        return transactionService.getTransaction(cardId,type,/*transactionId,externalId,currency,*/page,size);
+        return transactionService.getTransaction(cardId, type, page, size);
     }
 }

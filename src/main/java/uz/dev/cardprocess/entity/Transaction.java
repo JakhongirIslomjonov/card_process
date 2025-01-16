@@ -33,6 +33,7 @@ public class Transaction extends Auditable {
     private Currency currency;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "transaction_type")
     private TransactionType transactionType;
 
     @Enumerated(EnumType.STRING)
