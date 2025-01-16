@@ -2,6 +2,7 @@ package uz.dev.cardprocess.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import uz.dev.cardprocess.exceptions.BadRequestException;
 
@@ -21,7 +22,7 @@ import java.time.format.DateTimeFormatter;
 @RequiredArgsConstructor
 public class LogServiceImpl {
 
-
+    @Async
     public void writeLog(String path, String message) {
         String currentDir = System.getProperty("user.dir"); // Joriy ish papkasini olish
         String formattedFileName = String.format("%s-%s.log", "log", LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
@@ -42,10 +43,12 @@ public class LogServiceImpl {
 
     }
 
+    @Async
     public void writeLog(String path, String message, String jsonFormatString) {
         writeLog(path, MessageFormat.format("{0}: {1}", message, jsonFormatString));
     }
 
+    @Async
     public void writeLog(String path, String message, Long id) {
         writeLog(path, MessageFormat.format("{0}: {1}", message, id));
     }

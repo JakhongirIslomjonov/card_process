@@ -16,5 +16,8 @@
     <changeSet id="3" author="Islomjonov Jaxongir">
     <sqlFile path="db/sql/create_card.sql"/>
 </changeSet>
+    <changeSet id="4" author="Islomjonov Jaxongir">
+        <sqlFile path="db/sql/alter_card_add_version.sql"/>
+    </changeSet>
 
 </databaseChangeLog>

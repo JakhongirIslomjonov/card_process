@@ -9,6 +9,7 @@ create table card
     update_at  timestamp    not null default current_timestamp,
     created_by bigint,
     updated_by bigint,
+
     foreign key (user_id) references users (id) on delete cascade
 );
 

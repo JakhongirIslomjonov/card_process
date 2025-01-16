@@ -2,7 +2,7 @@ package uz.dev.cardprocess.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import uz.dev.cardprocess.dto.*;
@@ -25,6 +25,7 @@ import uz.dev.cardprocess.util.CardUtil;
 
 import java.util.Optional;
 import java.util.UUID;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -37,22 +38,19 @@ public class CardServiceImpl implements CardService {
     private final TransactionRepository transactionRepository;
     private final DebitMapper debitMapper;
     private final TransactionService transactionService;
-    private final String idempotencyKey = UUID.randomUUID().toString();
+
     private final TransactionMapper transactionMapper;
     private final LogServiceImpl logServiceImpl;
 
     @Override
     public DataDTO<CardResponseDTO> createCard(UUID idempotencyKey, CardRequestDTO cardRequestDTO) {
-        if (userRepository.findById(cardRequestDTO.getUserId()).isEmpty()) {
-            logServiceImpl.writeLog("/log/create_card", "user not found : " ,cardRequestDTO.getUserId());
-            throw new BadRequestException("user not found");
-        }
-        if (idempotencyRecordRepository.findById(idempotencyKey).isPresent()) {
-            Card card = cardUtil.checkCardExistence(idempotencyRecordRepository.findById(idempotencyKey).get().getCardId());
-            return new DataDTO<>(cardMapper.toDto(card));
+        Optional<IdempotencyRecord> recordOptional = idempotencyRecordRepository.findById(idempotencyKey);
+        if (recordOptional.isPresent()) {
+            logServiceImpl.writeLog("/log/create_card", "already create this idempotency-key :  ", String.valueOf(idempotencyKey));
+            return new DataDTO<CardResponseDTO>(cardMapper.toDto(cardRepository.findById(recordOptional.get().getCardId()).get()));
         }
         if (cardRepository.findActiveCardByUserId(cardRequestDTO.getUserId()) == 3) {
-            logServiceImpl.writeLog("/log/create_card", "he card limit has been exceeded : " ,cardRequestDTO.getUserId());
+            logServiceImpl.writeLog("/log/create_card", "he card limit has been exceeded : ", cardRequestDTO.getUserId());
             throw new BadRequestException("The card limit has been exceeded ");
         }
         Card card = cardRepository.save(cardMapper.toEntity(cardRequestDTO));
@@ -64,8 +62,9 @@ public class CardServiceImpl implements CardService {
     public ResponseEntity<?> getCardById(UUID cardId) {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new BadRequestException("Card not found by this id: " + cardId));
-        return ResponseEntity.status(HttpStatus.OK)
-                .eTag(String.valueOf(idempotencyKey))
+        String eTag = etagGen(card);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.ETAG, eTag)
                 .body(cardMapper.toDto(card));
     }
 
@@ -75,7 +74,7 @@ public class CardServiceImpl implements CardService {
         checkStatus(card);
         card.setStatus(CardStatus.BLOCKED);
         cardRepository.save(card);
-        logServiceImpl.writeLog("/log/blocked_card","this card blocked " , String.valueOf(card.getId()));
+        logServiceImpl.writeLog("/log/blocked_card", "this card blocked ", String.valueOf(card.getId()));
         return new DataDTO<>("card block");
 
     }
@@ -86,7 +85,7 @@ public class CardServiceImpl implements CardService {
         checkStatusUnBlock(card);
         card.setStatus(CardStatus.ACTIVE);
         cardRepository.save(card);
-        logServiceImpl.writeLog("/log/blocked_card","this card unBlocked " , String.valueOf(card.getId()));
+        logServiceImpl.writeLog("/log/blocked_card", "this card unBlocked ", String.valueOf(card.getId()));
         return new DataDTO<>("card unBlock");
     }
 
@@ -101,10 +100,10 @@ public class CardServiceImpl implements CardService {
                 return new DataDTO<>(debitMapper.toDebitResponseDto(transaction.get()));
             }
         }
-        Card card = cardUtil.checkCardExistence(cardId);
+        Card card = cardRepository.findById(cardId).orElseThrow(() -> new BadRequestException("Card with ID " + cardId + " not found"));
         Transaction transaction = checkBalanceAndWithdraw(card, debitRequestDTO);
         idempotencyRecordRepository.save(new IdempotencyRecord(idempotencyKey, cardId, transaction.getId()));
-        logServiceImpl.writeLog("/log/debit_card","this card debit " , transaction.getAmount());
+        logServiceImpl.writeLog("/log/debit_card", "this card debit ", transaction.getAmount());
         return new DataDTO<>(debitMapper.toDebitResponseDto(transaction));
 
 
@@ -119,10 +118,10 @@ public class CardServiceImpl implements CardService {
                 return new DataDTO<>(transactionMapper.toDto(transaction.get()));
             }
         }
-        Card card = cardUtil.checkCardExistence(carId);
+        Card card = cardRepository.findById(carId).orElseThrow(() -> new BadRequestException("Card with ID " + carId + " not found"));
         Transaction transaction = addBalance(card, creditRequestDTO);
         idempotencyRecordRepository.save(new IdempotencyRecord(idempotencyKey, carId, transaction.getId()));
-        logServiceImpl.writeLog("/log/credit_card","this card credit balance " , transaction.getAmount());
+        logServiceImpl.writeLog("/log/credit_card", "this card credit balance ", transaction.getAmount());
         return new DataDTO<>(transactionMapper.toDto(transaction));
     }
 
@@ -144,7 +143,7 @@ public class CardServiceImpl implements CardService {
 
     private Transaction checkBalanceAndWithdraw(Card card, DebitRequestDTO debitRequestDTO) {
         if (card.getCurrency().equals(debitRequestDTO.getCurrency()) && card.getBalance() < debitRequestDTO.getAmount()) {
-            logServiceImpl.writeLog("/log/debit_card","Mablag'da hatolik " , String.valueOf(card.getId()));
+            logServiceImpl.writeLog("/log/debit_card", "Mablag'da hatolik ", String.valueOf(card.getId()));
             throw new BadRequestException("Mablag'da hatolik");
         }
         if (!card.getCurrency().equals(debitRequestDTO.getCurrency())) {
@@ -173,8 +172,18 @@ public class CardServiceImpl implements CardService {
     }
 
     private Card checkEtag(String eTag, UUID cardId) {
-        Card card = cardUtil.checkCardExistence(cardId);
-        if (!(idempotencyKey.equals(eTag))) throw new BadRequestException("ETag does not match");
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new BadRequestException("Card not found by this id: " + cardId));
+        String correctETag = "\"" + card.getId().toString() + "-" + card.getVersion() + "\"";
+        if (!eTag.equals(correctETag)) {
+            throw new BadRequestException("eTag mismatch: Resource has been modified");
+        }
         return card;
+    }
+
+    private static String etagGen(Card card) {
+        String uniqueIdentifier = card.getId().toString();
+        int version = card.getVersion();
+        return "\"" + uniqueIdentifier + "-" + version + "\"";
     }
 }

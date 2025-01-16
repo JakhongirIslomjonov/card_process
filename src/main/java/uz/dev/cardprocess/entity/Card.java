@@ -29,8 +29,11 @@ public class Card extends Auditable {
 
     private Long balance;
 
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Currency currency;
 
+    @Version
+    private int version;
 }

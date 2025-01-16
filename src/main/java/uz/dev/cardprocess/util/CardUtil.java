@@ -72,11 +72,5 @@ public class CardUtil {
         }
     }
 
-    public Card checkCardExistence(UUID cardId) {
-        var cardOptional = cardRepository.findById(cardId);
-        if (cardOptional.isEmpty()) {
-            throw new BadRequestException("Card with such id not exists in processing.");
-        }
-        return cardOptional.get();
-    }
+
 }
