@@ -1,65 +1,65 @@
 package uz.dev.cardprocess.service.impl;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import uz.dev.cardprocess.dto.*;
-import uz.dev.cardprocess.entity.Card;
-import uz.dev.cardprocess.entity.IdempotencyRecord;
-import uz.dev.cardprocess.entity.Transaction;
-import uz.dev.cardprocess.entity.enums.CardStatus;
-import uz.dev.cardprocess.entity.enums.Currency;
-import uz.dev.cardprocess.exceptions.BadRequestException;
-import uz.dev.cardprocess.mapper.CardMapper;
-import uz.dev.cardprocess.mapper.DebitMapper;
-import uz.dev.cardprocess.mapper.TransactionMapper;
-import uz.dev.cardprocess.repository.CardRepository;
-import uz.dev.cardprocess.repository.IdempotencyRecordRepository;
-import uz.dev.cardprocess.repository.TransactionRepository;
-import uz.dev.cardprocess.service.CardService;
-import uz.dev.cardprocess.service.TransactionService;
-import uz.dev.cardprocess.util.CardUtil;
+    import lombok.RequiredArgsConstructor;
+    import lombok.extern.slf4j.Slf4j;
+    import org.springframework.cache.annotation.Cacheable;
+    import org.springframework.http.HttpHeaders;
+    import org.springframework.http.ResponseEntity;
+    import org.springframework.stereotype.Service;
+    import org.springframework.transaction.annotation.Transactional;
+    import uz.dev.cardprocess.dto.*;
+    import uz.dev.cardprocess.entity.Card;
+    import uz.dev.cardprocess.entity.IdempotencyRecord;
+    import uz.dev.cardprocess.entity.Transaction;
+    import uz.dev.cardprocess.entity.enums.CardStatus;
+    import uz.dev.cardprocess.entity.enums.Currency;
+    import uz.dev.cardprocess.exceptions.BadRequestException;
+    import uz.dev.cardprocess.mapper.CardMapper;
+    import uz.dev.cardprocess.mapper.DebitMapper;
+    import uz.dev.cardprocess.mapper.TransactionMapper;
+    import uz.dev.cardprocess.repository.CardRepository;
+    import uz.dev.cardprocess.repository.IdempotencyRecordRepository;
+    import uz.dev.cardprocess.repository.TransactionRepository;
+    import uz.dev.cardprocess.service.CardService;
+    import uz.dev.cardprocess.service.TransactionService;
+    import uz.dev.cardprocess.util.CardUtil;
 
-import java.util.Optional;
-import java.util.UUID;
+    import java.util.Optional;
+    import java.util.UUID;
 
-@Slf4j
-@Service
-@RequiredArgsConstructor
-public class CardServiceImpl implements CardService {
-    private final CardRepository cardRepository;
-    private final IdempotencyRecordRepository idempotencyRecordRepository;
-    private final CardUtil cardUtil;
-    private final CardMapper cardMapper;
-    private final TransactionRepository transactionRepository;
-    private final DebitMapper debitMapper;
-    private final TransactionService transactionService;
+    @Slf4j
+    @Service
+    @RequiredArgsConstructor
+    public class CardServiceImpl implements CardService {
+        private final CardRepository cardRepository;
+        private final IdempotencyRecordRepository idempotencyRecordRepository;
+        private final CardUtil cardUtil;
+        private final CardMapper cardMapper;
+        private final TransactionRepository transactionRepository;
+        private final DebitMapper debitMapper;
+        private final TransactionService transactionService;
 
-    private final TransactionMapper transactionMapper;
-    private final LogServiceImpl logServiceImpl;
+        private final TransactionMapper transactionMapper;
+        private final LogServiceImpl logServiceImpl;
 
-    @Override
-    @Transactional
-    public DataDTO<CardResponseDTO> createCard(UUID idempotencyKey, CardRequestDTO cardRequestDTO) {
-        Optional<IdempotencyRecord> recordOptional = idempotencyRecordRepository.findById(idempotencyKey);
-        if (recordOptional.isPresent()) {
-            logServiceImpl.writeLog("/log/create_card", "already create this idempotency-key :  ", String.valueOf(idempotencyKey));
-            Card existingCard = cardRepository.findById(recordOptional.get().getCardId())
-                    .orElseThrow(() -> new BadRequestException("Card not found for the given idempotency record"));
-            return new DataDTO<>(cardMapper.toDto(existingCard));
+        @Override
+        @Transactional
+        public DataDTO<CardResponseDTO> createCard(UUID idempotencyKey, CardRequestDTO cardRequestDTO) {
+            Optional<IdempotencyRecord> recordOptional = idempotencyRecordRepository.findById(idempotencyKey);
+            if (recordOptional.isPresent()) {
+                logServiceImpl.writeLog("/log/create_card", "already create this idempotency-key :  ", String.valueOf(idempotencyKey));
+                Card existingCard = cardRepository.findById(recordOptional.get().getCardId())
+                        .orElseThrow(() -> new BadRequestException("Card not found for the given idempotency record"));
+                return new DataDTO<>(cardMapper.toDto(existingCard));
+            }
+            if (cardRepository.findActiveCardByUserId(cardRequestDTO.getUserId()) == 3) {
+                logServiceImpl.writeLog("/log/create_card", "he card limit has been exceeded : ", cardRequestDTO.getUserId());
+                throw new BadRequestException("The card limit has been exceeded ");
+            }
+            Card card = cardRepository.save(cardMapper.toEntity(cardRequestDTO));
+            idempotencyRecordRepository.save(new IdempotencyRecord(idempotencyKey, card.getId()));
+            return new DataDTO<>(cardMapper.toDto(card));
         }
-        if (cardRepository.findActiveCardByUserId(cardRequestDTO.getUserId()) == 3) {
-            logServiceImpl.writeLog("/log/create_card", "he card limit has been exceeded : ", cardRequestDTO.getUserId());
-            throw new BadRequestException("The card limit has been exceeded ");
-        }
-        Card card = cardRepository.save(cardMapper.toEntity(cardRequestDTO));
-        idempotencyRecordRepository.save(new IdempotencyRecord(idempotencyKey, card.getId()));
-        return new DataDTO<>(cardMapper.toDto(card));
-    }
 
     @Cacheable(value = "cards", key = "#cardId")
     @Override
