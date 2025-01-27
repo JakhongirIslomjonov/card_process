@@ -8,19 +8,15 @@ spring:
     name: card-process
   datasource:
     driverClassName: com.p6spy.engine.spy.P6SpyDriver
+    url: jdbc:p6spy:h2:mem:telegramdb  # Bu yerda `localhost`, `1521` port va `xe` - Oracle SID
+    username: sa
     password: 0095
-    url: jdbc:p6spy:postgresql://localhost:5432/postgres
-    username: postgres
   jpa:
-    hibernate:
-      ddl-auto: create
-    properties:
-      hibernate:
-        format_sql: true
-        types:
-          print:
-            warn: false
-    show-sql: true
+     database-platform: org.hibernate.dialect.H2Dialect
+     h2:
+        console:
+          enabled: true
+          path: /h2-console
 
 sentry:
   dsn: https://809f46fddddb00ebd21ad7b4d24b1a26@o4508398301872128.ingest.de.sentry.io/4508408443240528

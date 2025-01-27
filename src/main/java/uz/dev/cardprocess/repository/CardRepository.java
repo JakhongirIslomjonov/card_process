@@ -10,5 +10,5 @@ public interface CardRepository extends JpaRepository<Card, UUID> {
     @Query("""
             select count (Card ) from Card 
                         where  status ='ACTIVE' and user.id =:userId""")
-    Integer findActiveCardByUserId(Long userId);
+    int findActiveCardByUserId(Long userId);
 }

@@ -20,7 +20,6 @@ import uz.dev.cardprocess.mapper.TransactionMapper;
 import uz.dev.cardprocess.repository.CardRepository;
 import uz.dev.cardprocess.repository.IdempotencyRecordRepository;
 import uz.dev.cardprocess.repository.TransactionRepository;
-import uz.dev.cardprocess.repository.UserRepository;
 import uz.dev.cardprocess.service.CardService;
 import uz.dev.cardprocess.service.TransactionService;
 import uz.dev.cardprocess.util.CardUtil;
@@ -36,7 +35,6 @@ public class CardServiceImpl implements CardService {
     private final IdempotencyRecordRepository idempotencyRecordRepository;
     private final CardUtil cardUtil;
     private final CardMapper cardMapper;
-    private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
     private final DebitMapper debitMapper;
     private final TransactionService transactionService;
@@ -178,9 +176,9 @@ public class CardServiceImpl implements CardService {
     private Card checkEtag(String eTag, UUID cardId) {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new BadRequestException("Card not found by this id: " + cardId));
-        String correctETag = "\"" + card.getId().toString() + "-" + card.getVersion() + "\"";
-        System.out.println(eTag);
-        System.out.println(correctETag);
+        String correctETag = card.getCreatedAt().toString() + "-" + card.getVersion();
+        System.out.println("etag" + eTag);
+        System.out.println(" correct etag " + correctETag);
         if (!eTag.equals(correctETag)) {
             throw new BadRequestException("eTag mismatch: Resource has been modified");
         }
@@ -188,7 +186,7 @@ public class CardServiceImpl implements CardService {
     }
 
     private static String etagGen(Card card) {
-        String uniqueIdentifier = card.getId().toString();
+        String uniqueIdentifier = card.getCreatedAt().toString();
         int version = card.getVersion();
         return "\"" + uniqueIdentifier + "-" + version + "\"";
     }
