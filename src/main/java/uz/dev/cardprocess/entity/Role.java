@@ -7,8 +7,6 @@ import org.springframework.security.core.GrantedAuthority;
 import uz.dev.cardprocess.entity.enums.RoleName;
 
 
-
-
 @Getter
 @Setter
 @Entity
@@ -16,7 +14,7 @@ import uz.dev.cardprocess.entity.enums.RoleName;
 @NoArgsConstructor
 @Builder
 @Table(name = "roles")
-public class Role  implements GrantedAuthority {
+public class Role implements GrantedAuthority {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)

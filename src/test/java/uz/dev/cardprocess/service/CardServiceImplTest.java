@@ -12,6 +12,7 @@ import uz.dev.cardprocess.entity.Card;
 import uz.dev.cardprocess.entity.IdempotencyRecord;
 import uz.dev.cardprocess.entity.enums.CardStatus;
 import uz.dev.cardprocess.entity.enums.Currency;
+import uz.dev.cardprocess.exceptions.BadRequestException;
 import uz.dev.cardprocess.mapper.CardMapper;
 import uz.dev.cardprocess.repository.CardRepository;
 import uz.dev.cardprocess.repository.IdempotencyRecordRepository;
@@ -21,7 +22,7 @@ import uz.dev.cardprocess.service.impl.LogServiceImpl;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -44,38 +45,8 @@ public class CardServiceImplTest {
     private CardServiceImpl cardService;
 
     @Test
-    void shouldCreateCardWhenIdempotencyKeyNotExists() {
-        // Arrange
-        UUID idempotencyKey = UUID.randomUUID();
-
-        CardRequestDTO cardRequestDTO = new CardRequestDTO();
-        cardRequestDTO.setBalance(100000L);
-        cardRequestDTO.setStatus(CardStatus.ACTIVE);
-        cardRequestDTO.setCurrency(Currency.UZS);
-        cardRequestDTO.setUserId(1L);
-
-        Card card = new Card();
-        CardResponseDTO cardResponseDTO = new CardResponseDTO();
-
-        when(idempotencyRecordRepository.findById(idempotencyKey)).thenReturn(Optional.empty());
-        when(cardRepository.findActiveCardByUserId(cardRequestDTO.getUserId())).thenReturn(0); // No active cards
-        when(cardMapper.toEntity(cardRequestDTO)).thenReturn(card);
-        when(cardRepository.save(card)).thenReturn(card);
-        when(cardMapper.toDto(card)).thenReturn(cardResponseDTO);
-
-        // Act
-        DataDTO<CardResponseDTO> responseDTODataDTO = cardService.createCard(idempotencyKey, cardRequestDTO);
-
-        // Assert
-        assertNotNull(responseDTODataDTO);
-        assertNotNull(responseDTODataDTO.getData());
-        verify(cardRepository).save(card);
-        verify(idempotencyRecordRepository).save(any(IdempotencyRecord.class)); // Check save call
-    }
-
-    @Test
     void shouldNotCreateCardReplaceExistsCard() {
-        // Arrange
+
         UUID idempotencyKey = UUID.randomUUID();
         UUID cardId = UUID.randomUUID();
 
@@ -95,16 +66,59 @@ public class CardServiceImplTest {
         when(cardRepository.findById(cardId)).thenReturn(Optional.of(existingCard));
         when(cardMapper.toDto(existingCard)).thenReturn(new CardResponseDTO());
 
-        // Act
+
         DataDTO<CardResponseDTO> responseDTODataDTO = cardService.createCard(idempotencyKey, cardRequestDTO);
 
-        // Assert
         assertNotNull(responseDTODataDTO);
         assertNotNull(responseDTODataDTO.getData());
         verify(cardRepository).findById(cardId);
-        verify(cardRepository, never()).save(any(Card.class)); // Ensure save was not called
+        verify(cardRepository, never()).save(any(Card.class));
     }
 
+    @Test
+    void shouldFindActiveCardByUserId() {
+        UUID idempotencyKey = UUID.randomUUID();
+        CardRequestDTO cardRequestDTO = new CardRequestDTO();
+        cardRequestDTO.setUserId(1L);
+
+        when(cardRepository.findActiveCardByUserId(cardRequestDTO.getUserId())).thenReturn(3);
+
+        BadRequestException badRequestException = assertThrows(BadRequestException.class, () -> {
+            cardService.createCard(idempotencyKey, cardRequestDTO);
+        });
+
+        verify(logService).writeLog("/log/create_card", "he card limit has been exceeded : ", 1L);
+
+        assertEquals("The card limit has been exceeded ", badRequestException.getMessage());
+    }
+
+    @Test
+    void shouldCreateCardWhenIdempotencyKeyNotExists() {
+
+        UUID idempotencyKey = UUID.randomUUID();
+
+        CardRequestDTO cardRequestDTO = new CardRequestDTO();
+        cardRequestDTO.setBalance(100000L);
+        cardRequestDTO.setStatus(CardStatus.ACTIVE);
+        cardRequestDTO.setCurrency(Currency.UZS);
+        cardRequestDTO.setUserId(1L);
+
+        Card card = new Card();
+        CardResponseDTO cardResponseDTO = new CardResponseDTO();
+
+        when(idempotencyRecordRepository.findById(idempotencyKey)).thenReturn(Optional.empty());
+        when(cardRepository.findActiveCardByUserId(cardRequestDTO.getUserId())).thenReturn(0); 
+        when(cardMapper.toEntity(cardRequestDTO)).thenReturn(card);
+        when(cardRepository.save(card)).thenReturn(card);
+        when(cardMapper.toDto(card)).thenReturn(cardResponseDTO);
 
 
+        DataDTO<CardResponseDTO> responseDTODataDTO = cardService.createCard(idempotencyKey, cardRequestDTO);
+
+
+        assertNotNull(responseDTODataDTO);
+        assertNotNull(responseDTODataDTO.getData());
+        verify(cardRepository).save(card);
+        verify(idempotencyRecordRepository).save(any(IdempotencyRecord.class));
+    }
 }
